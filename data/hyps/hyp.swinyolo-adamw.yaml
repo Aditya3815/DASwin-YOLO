@@ -1,0 +1,55 @@
+# Hyperparameters for SwinYOLO training with AdamW optimizer
+# Architecture: C3SWT backbone + BiFPN neck + CoordAttention, 4-scale heads (P2–P5)
+# Target: High-resolution dense small-object detection (≥640px images)
+#
+# Recommended optimizer: AdamW (pass --optimizer AdamW to train.py)
+# Recommended schedule:  Cosine LR (pass --cos-lr to train.py)
+#
+# Key design choices vs. default YOLOv5 hyps:
+#   - lr0 = 1e-6     : Prevents numerical instability in Swin Transformer blocks at early epochs
+#   - weight_decay   : 0.05 — AdamW standard (Liu et al. 2021)
+#   - label_smoothing: 0.1  — beneficial for dense/small object datasets with noisy labels
+#   - copy_paste     : 0.1  — increases object density diversity during augmentation
+#   - degrees = 0    : Disable rotation if object orientation is semantically significant
+#   - flipud  = 0    : Disable vertical flip if orientation matters in your domain
+#
+# Reference: Swin Transformer (Liu et al. 2021) fine-tuning: lr=1e-5 to 1e-6, wd=0.05
+
+lr0: 0.000001          # Initial LR — 1e-6 prevents Swin block gradient spike at epoch ~10
+lrf: 1.0               # Final LR ratio — flat plateau (lr_min = lr0 × lrf)
+momentum: 0.937        # AdamW beta1
+weight_decay: 0.05     # AdamW standard weight decay (decoupled)
+warmup_epochs: 3.0     # Short warmup — at lr=1e-6 warmup is less critical
+warmup_momentum: 0.8   # Warmup beta1
+warmup_bias_lr: 0.000001  # Must equal lr0 for AdamW fine-tuning
+
+# Loss component gains (auto-scaled by train.py for nl=4, your image size)
+box: 0.05              # Box regression loss gain
+cls: 0.5               # Classification loss gain
+cls_pw: 1.0            # BCE positive weight for cls loss
+obj: 1.0               # Objectness loss gain
+obj_pw: 1.0            # BCE positive weight for obj loss
+
+# Anchor matching
+iou_t: 0.20            # IoU training threshold
+anchor_t: 4.0          # Anchor-multiple threshold
+fl_gamma: 0.0          # Focal loss gamma (0 = disabled; set to 1.5 for severe class imbalance)
+
+# Label smoothing — recommended for synthetic data or noisy annotations
+label_smoothing: 0.1   # Smoothing epsilon; set 0.0 to disable
+
+# Augmentation — conservative defaults for high-resolution dense imagery
+# Adjust hsv/scale/degrees/flips to match your domain's physical constraints
+hsv_h: 0.015           # Image HSV-Hue augmentation (fraction)
+hsv_s: 0.3             # Image HSV-Saturation augmentation
+hsv_v: 0.3             # Image HSV-Value augmentation
+degrees: 0.0           # Image rotation (+/- degrees); set 0 if orientation is meaningful
+translate: 0.1         # Image translation (+/- fraction)
+scale: 0.3             # Image scale (+/- gain)
+shear: 0.0             # Image shear (+/- degrees)
+perspective: 0.0       # Image perspective (+/- fraction); range 0-0.001
+flipud: 0.0            # Image flip up-down probability; set 0 if vertical orientation matters
+fliplr: 0.5            # Image flip left-right probability
+mosaic: 1.0            # Image mosaic (probability); disabled for final --no-augs N epochs
+mixup: 0.0             # Image mixup (probability); 0 = disabled
+copy_paste: 0.1        # Segment copy-paste probability; increases instance density variety

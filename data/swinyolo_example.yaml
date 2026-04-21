@@ -1,0 +1,30 @@
+# SwinYOLO Dataset Configuration — Template
+#
+# Copy this file to data/your_dataset.yaml and fill in your dataset details.
+# Then train with:
+#   python train_swinyolo.py --data data/your_dataset.yaml
+#
+# For dataset-specific anchors (strongly recommended for small-object datasets):
+#   python utils/ciou_kmeans.py \
+#       --label-dir /path/to/labels \
+#       --img-size 1024 \
+#       --n-clusters 12
+#   Then paste the printed anchors into models/yolov5s_swint.yaml
+
+# Dataset root path (absolute or relative to the repo root)
+path: /path/to/your/dataset  # replace with your actual dataset root
+
+# Sub-paths (relative to 'path'); can be folders or .txt files listing image paths
+train: images/train
+val:   images/val
+test:  images/test   # optional
+
+# Number of classes
+nc: 80  # replace with your class count
+
+# Class names — must have exactly nc entries
+names:
+  - class_0
+  - class_1
+  # ... add all your class names here
+  # Example for COCO: ['person', 'bicycle', 'car', ...]
